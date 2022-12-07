@@ -227,20 +227,20 @@ def get_openclip_model(model_name, pretrained):
     model, _, _ = open_clip.create_model_and_transforms(model_name=model_name, pretrained=pretrained, device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
     return model.visual
         
-        '''        
-        model_name: str,
-        pretrained: Optional[str] = None,
-        precision: str = 'fp32',
-        device: Union[str, torch.device] = 'cpu',
-        jit: bool = False,
-        force_quick_gelu: bool = False,
-        force_custom_text: bool = False,
-        pretrained_image: bool = False,
-        pretrained_hf: bool = True,
-        image_mean: Optional[Tuple[float, ...]] = None,
-        image_std: Optional[Tuple[float, ...]] = None,
-        cache_dir: Optional[str] = None,
-        '''
+    '''        
+    model_name: str,
+    pretrained: Optional[str] = None,
+    precision: str = 'fp32',
+    device: Union[str, torch.device] = 'cpu',
+    jit: bool = False,
+    force_quick_gelu: bool = False,
+    force_custom_text: bool = False,
+    pretrained_image: bool = False,
+    pretrained_hf: bool = True,
+    image_mean: Optional[Tuple[float, ...]] = None,
+    image_std: Optional[Tuple[float, ...]] = None,
+    cache_dir: Optional[str] = None,
+    '''
     
 def define_openclip_options():
     clip_options = {}
