@@ -531,6 +531,7 @@ def get_model_options(train_type=None, train_data = None, model_source=None):
                      **define_taskonomy_options(),
                      **define_timm_options(),  
                      **define_clip_options(), 
+                     **define_openclip_options(),
                      **define_vissl_options(), 
                      **define_yolo_options(),
                      **define_dino_options(),
@@ -560,6 +561,7 @@ transform_options = {'torchvision': get_torchvision_transforms,
                      'timm': get_timm_transforms,
                      'taskonomy': get_taskonomy_transforms,
                      'clip': get_clip_transforms,
+                     'openclip': get_openclip_transforms,
                      'vissl': get_vissl_transforms,
                      'yolo': get_yolo_transforms,
                      'dino': get_dino_transforms,
@@ -594,7 +596,7 @@ def get_recommended_transforms(model_query, input_type = 'PIL'):
     if model_type not in cached_model_types:
         if model_source == 'torchvision':
             return transform_options[model_source](model_type, input_type)
-        if model_source in ['timm', 'clip', 'detectron']:
+        if model_source in ['timm', 'clip', 'openclip', 'detectron']:
             return transform_options[model_source](model_name, input_type)
         if model_source in ['taskonomy', 'vissl', 'dino', 'yolo', 'midas']:
             return transform_options[model_source](input_type)
