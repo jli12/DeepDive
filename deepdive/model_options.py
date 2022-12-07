@@ -223,7 +223,8 @@ def get_clip_transforms(model_name, input_type = 'PIL'):
 
 def get_openclip_model(model_name):
     import open_clip # ; model, _ = clip.load(model_name, device='cpu')
-    model, _, _ = open_clip.create_model_and_transforms(model_name=model_name) # , device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
+    print(model_name)
+    model, _, _ = open_clip.create_model_and_transforms(model_name) # , device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
     return model.visual
         
         '''        
@@ -258,7 +259,7 @@ def define_openclip_options():
     return clip_options
 
 def get_openclip_transforms(model_name, input_type = 'PIL'):
-    import clip; # _, preprocess = clip.load(model_name, device = 'cpu')
+    import open_clip; # _, preprocess = clip.load(model_name, device = 'cpu')
     _, _, preprocess = open_clip.create_model_and_transforms(model_name=model_name, device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
     if input_type == 'PIL':
         recommended_transforms = preprocess.transforms
