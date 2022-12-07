@@ -219,6 +219,52 @@ def get_clip_transforms(model_name, input_type = 'PIL'):
     if not using_half_tensor_models:
         return recommended_transforms
 
+# Open CLIP Options ---------------------------------------------------------------------------
+
+def get_openclip_model(model_name):
+    import open_clip # ; model, _ = clip.load(model_name, device='cpu')
+    model, _, _ = open_clip.create_model_and_transforms(model=model_type, device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
+    return model.visual
+    
+    
+def define_openclip_options():
+    clip_options = {}
+
+    clip_typology = model_typology[model_typology['model_source'] == 'openclip'].copy()
+    for index, row in clip_typology.iterrows():
+        model_name = row['model_name']
+        train_type = row['train_type']
+        train_data = row['train_data']
+        model_source = 'openclip'
+        model_string = '_'.join([model_name, train_type])
+        model_call = "get_openclip_model('{}')".format(model_name)
+        clip_options[model_string] = ({'model_name': model_name, 'train_type': train_type,
+                                       'train_data': train_data, 'model_source': model_source, 'call': model_call})
+            
+    return clip_options
+
+def get_openclip_transforms(model_name, input_type = 'PIL'):
+    import clip; # _, preprocess = clip.load(model_name, device = 'cpu')
+    _, _, preprocess = open_clip.create_model_and_transforms(model=model_type, device='cpu') # 'ViT-B-32-quickgelu', pretrained='laion400m_e32')
+    if input_type == 'PIL':
+        recommended_transforms = preprocess.transforms
+    if input_type == 'numpy':
+        recommended_transforms = [transforms.ToPILImage()] + preprocess.transforms
+    recommended_transforms = transforms.Compose(recommended_transforms)
+    
+    using_half_tensor_models = False
+    if using_half_tensor_models:
+        if 'ViT' in model_name:
+            def transform_plus_retype(image_input):
+                return recommended_transforms(image_input).type(torch.HalfTensor)
+            return transform_plus_retype
+        if 'ViT' not in model_name:
+            return recommended_transforms
+    
+    if not using_half_tensor_models:
+        return recommended_transforms
+
+
 # VISSL Options ---------------------------------------------------------------------------
 
 def get_vissl_model(model_name):
