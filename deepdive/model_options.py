@@ -536,6 +536,75 @@ def get_detectron_transforms(model_name, input_type = 'PIL', downsize = True):
     
     return detectron_transforms    
 
+
+# EVA Options ---------------------------------------------------------------------------
+
+def get_eva_model(model_name, pretrained):
+    from timm import create_model
+
+    eva_data = (model_typology[model_typology['model_source'] == 'eva'].set_index('model_name').to_dict('index'))
+
+    eva_model = create_model('eva_g_patch14')
+    # checkpoint = torch.hub.load_state_dict_from_url(args.finetune, map_location='cpu', check_hash=True)
+    checkpoint = load_state_dict_from_url(eva_data[model_name]['weights_url'], map_location = torch.device('cpu'))
+    return eva_model.load_state_dict(checkpoint['model_state_dict'])
+
+# sz=336
+# batch_size=16
+# crop_pct=1.0
+
+#     model = create_model(
+#         args.model,
+#         pretrained=False,
+#         img_size=args.input_size,
+#         num_classes=args.nb_classes,
+#         drop_rate=args.drop,
+#         drop_path_rate=args.drop_path,
+#         attn_drop_rate=args.attn_drop_rate,
+#         drop_block_rate=None,
+#         use_mean_pooling=args.use_mean_pooling,
+#         use_checkpoint=args.use_checkpoint, 
+#     )
+
+
+def define_eva_options():
+    clip_options = {}
+
+    clip_typology = model_typology[model_typology['model_source'] == 'openclip'].copy()
+    for index, row in clip_typology.iterrows():
+        model_name = row['model_name']
+        train_type = row['train_type']
+        train_data = row['train_data']
+        model_source = 'openclip'
+        model_string = '_'.join([model_name, train_type])
+        model_call = "get_openclip_model('{}', '{}')".format(model_name, train_data)
+        clip_options[model_string] = ({'model_name': model_name, 'train_type': train_type,
+                                       'train_data': train_data, 'model_source': model_source, 'call': model_call})
+            
+    return clip_options
+
+
+def get_eva_transforms(model_name='ViT-L/14', input_type = 'PIL'):
+    import clip; _, preprocess = clip.load(model_name, device = 'cpu')
+    if input_type == 'PIL':
+        recommended_transforms = preprocess.transforms
+    if input_type == 'numpy':
+        recommended_transforms = [transforms.ToPILImage()] + preprocess.transforms
+    recommended_transforms = transforms.Compose(recommended_transforms)
+    
+    using_half_tensor_models = False
+    if using_half_tensor_models:
+        if 'ViT' in model_name:
+            def transform_plus_retype(image_input):
+                return recommended_transforms(image_input).type(torch.HalfTensor)
+            return transform_plus_retype
+        if 'ViT' not in model_name:
+            return recommended_transforms
+    
+    if not using_half_tensor_models:
+        return recommended_transforms
+
+
 # Aggregate Options ---------------------------------------------------------------------------
 
 if importlib.util.find_spec('custom_models') is not None:
@@ -551,7 +620,8 @@ def get_model_options(train_type=None, train_data = None, model_source=None):
                      **define_yolo_options(),
                      **define_dino_options(),
                      **define_midas_options(), 
-                     **define_detectron_options()}
+                     **define_detectron_options(),
+                     **define_eva_options(),}
     
     if importlib.util.find_spec('custom_models') is not None:
         model_options = {**model_options, 
@@ -581,7 +651,8 @@ transform_options = {'torchvision': get_torchvision_transforms,
                      'yolo': get_yolo_transforms,
                      'dino': get_dino_transforms,
                      'midas': get_midas_transforms,
-                     'detectron': get_detectron_transforms}
+                     'detectron': get_detectron_transforms
+                     'eva': get_eva_transforms}
 
 def get_transform_options():
     return transform_options
@@ -613,7 +684,7 @@ def get_recommended_transforms(model_query, input_type = 'PIL'):
             return transform_options[model_source](model_type, input_type)
         if model_source in ['timm', 'clip', 'openclip', 'detectron']:
             return transform_options[model_source](model_name, input_type)
-        if model_source in ['taskonomy', 'vissl', 'dino', 'yolo', 'midas']:
+        if model_source in ['taskonomy', 'vissl', 'dino', 'yolo', 'midas', 'eva']:
             return transform_options[model_source](input_type)
         
     if importlib.util.find_spec('custom_models') is not None:
