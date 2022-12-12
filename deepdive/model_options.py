@@ -651,7 +651,7 @@ transform_options = {'torchvision': get_torchvision_transforms,
                      'yolo': get_yolo_transforms,
                      'dino': get_dino_transforms,
                      'midas': get_midas_transforms,
-                     'detectron': get_detectron_transforms
+                     'detectron': get_detectron_transforms,
                      'eva': get_eva_transforms}
 
 def get_transform_options():
